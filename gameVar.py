@@ -21,19 +21,19 @@ class gameVar:
         self.userText = ""
         
         #Dimensions of the maze 
-        self.mazeWidth = 50 
-        self.mazeHeight = 50
-        self.cellSize = 20
-        self.col = int(self.mazeWidth/self.cellSize)
-        self.row = int(self.mazeHeight/self.cellSize)
+        self.mazeWidth = 800 
+        self.mazeHeight = 800
+        self.cellSize = 40
+        self.cols = int(self.mazeWidth/self.cellSize)
+        self.rows = int(self.mazeHeight/self.cellSize)
 
         #User character
-        # #Dimensions of character
-        self.characterWidth = 50 
-        self.characterHeight = 50 
+        #Dimensions of character
+        self.characterWidth = 40 
+        self.characterHeight = 40 
         #Coordinates of character
-        self.characterX = 300
-        self.characterY = 500
+        self.characterX = 0
+        self.characterY = 560
         #Determnies which direction the character is moving in both x and y direction
         self.characterXDirection = 0
         self.characterYDirection = 0

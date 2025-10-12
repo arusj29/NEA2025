@@ -68,15 +68,28 @@ def textInput(event):
 def characterMovement(event):
     #Changes the direction of the character based on the user input
     if event.type == pygame.KEYDOWN:
+        currentX = gameVar.characterX
+        currentY = gameVar.characterY
+
         if event.key == pygame.K_LEFT:
-            gameVar.characterXDirection = -5
-        if event.key == pygame.K_RIGHT:
-            gameVar.characterXDirection = 5
-        if event.key == pygame.K_UP:
-            gameVar.characterYDirection = -5
-        if event.key == pygame.K_DOWN:
-            gameVar.characterYDirection = 5
-    
+            newX = currentX - gameVar.cellSize
+            if newX >= 0:
+                gameVar.characterX = newX
+            
+        elif event.key == pygame.K_RIGHT:
+            newX = currentX + gameVar.cellSize
+            if newX <= gameVar.mazeWidth - gameVar.characterWidth:
+                gameVar.characterX = newX
+        
+        elif event.key == pygame.K_UP:
+            newY = currentY - gameVar.cellSize
+            if newY >= 0:
+                gameVar.characterY = newY
+        
+        elif event.key == pygame.K_DOWN:
+            newY = currentY + gameVar.cellSize
+            if newY <= gameVar.mazeHeight - gameVar.characterHeight:
+                gameVar.characterY = newY
     #Keyup
     if event.type == pygame.KEYUP:
         #Stops the character from continuting to move once the key is no longer pressed
@@ -84,7 +97,7 @@ def characterMovement(event):
             gameVar.characterXDirection = 0
         if event.key in (pygame.K_UP, pygame.K_DOWN):
             gameVar.characterYDirection = 0
-            
+
 def mainMenu():
     pygame.display.set_caption("Start Screen") #Set title of window to start screen
     drawText("ESCAPEROUTE",gameVar.font,gameVar.textColour,250,100) #Display name of game at the top of the main menu
@@ -108,16 +121,8 @@ def generateMenu():
     widthButton.draw(screen)
     heightButton.draw(screen)
     
-    #Character
-    pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
-    updateCharacterPos()
     if createButton.isClicked(event):
-        create = True
-        if create == True:
-            if gameVar.mazeWidth == "" or gameVar.mazeHeight == "":
-                drawText("Can't generate maze, enter width and height first",gameVar.font,gameVar.textColour,250,50)
-                screen.fill(gameVar.black)
-                drawGrid(grid)
+        gameVar.menuState = "maze"
         if widthButton.isClicked(event):
             gameVar.mazeWidth = drawText(gameVar.userText,gameVar.font,gameVar.textColour,200,140)
         if heightButton.isClicked(event):
@@ -153,40 +158,32 @@ def helpMenu():
     pygame.display.set_caption("Help") #Set title of window to help
     drawText("Help",gameVar.font,gameVar.textColour,260,50) #Display purpose of menu at the top of the  menu
 
-
-#Updates the position of the character according to the user input
-def updateCharacterPos():
-    #Changes the position of the character based on the user input
-    if gameVar.characterXDirection > 0:
-        if gameVar.characterX<800 - gameVar.characterWidth:
-            gameVar.characterX += gameVar.characterXDirection
-    if gameVar.characterXDirection < 0:
-        if gameVar.characterX > 0:
-            gameVar.characterX += gameVar.characterXDirection
-    if gameVar.characterYDirection > 0:
-        if gameVar.characterY<600 - gameVar.characterHeight:
-            gameVar.characterY += gameVar.characterYDirection
-    if gameVar.characterYDirection < 0:
-        if gameVar.characterY > 0:
-            gameVar.characterY += gameVar.characterYDirection
-
+def mazeMenu():
+    pygame.display.set_caption("Maze menu") #Set title of window to maze menu
+    grid = createGrid()
+    drawGrid(grid)
+    #Character
+    pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
+    
 
 #Creates the maze grid and returns it
 def createGrid():
-    grid = []
-    for rows in range (gameVar.row):
-        grid.append([])
-        for cols in range (gameVar.col):
-            grid[rows].append(cell.Cell(gameVar.row,gameVar.col,gameVar.cellSize))
+    grid = [] #Initialise empty grid
+    #Iterates through each row position in the grid
+    for row in range (gameVar.rows):
+        grid.append([]) #Adds a new empty row to the grid
+        #Iterates through each column position in the current row
+        for col in range (gameVar.cols):
+            grid[row].append(cell.Cell(row,col,gameVar.cellSize)) #Adds a new cell to the current row in the grid
     return grid
 
+#Displays the maze grid on the screen
 def drawGrid(grid):
     for row in grid:
-        for cell in grid:
-            cell.draw()
+        for cellObj in row:
+            cellObj.draw(screen)
 
 run = True   #Used to determine whether the game is running
-grid = createGrid()
 while run: 
     
     #Event handler
@@ -209,6 +206,9 @@ while run:
         settingsMenu()
     elif gameVar.menuState == "help":
         helpMenu()
+    elif gameVar.menuState == "maze":
+        mazeMenu()
+    
         
     #Update the window
     pygame.display.update()
