@@ -2,6 +2,7 @@ import pygame
 import button
 from gameVar import gameVar,colours
 import cell
+import random
 
 #Initialise pygame modules
 pygame.init()
@@ -182,6 +183,25 @@ def drawGrid(grid):
     for row in grid:
         for cellObj in row:
             cellObj.draw(screen)
+
+def generateMaze(grid):
+    stack = []
+    current = grid[0][0]
+    current.visited = True
+    stack.append(current)
+
+    while stack:
+        current = stack[-1]
+        neighbours = current.getUnvisitedNeighbours(grid)
+
+        if neighbours:
+            nextCell = random.choice(neighbours)
+            current.removeWall(nextCell)
+            nextCell.visited =  True
+            stack.append(nextCell)
+        else:
+            stack.pop()
+
 
 run = True   #Used to determine whether the game is running
 while run: 
