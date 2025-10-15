@@ -1,3 +1,4 @@
+
 import pygame
 import button
 from gameVar import gameVar,colours
@@ -186,9 +187,9 @@ def drawGrid(grid):
 
 def generateMaze(grid):
     stack = []
-    current = grid[0][0]
-    current.visited = True
-    stack.append(current)
+    startingCell = grid[0][0]
+    startingCell.visited = True
+    stack.append(startingCell)
 
     while stack:
         current = stack[-1]

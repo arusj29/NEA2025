@@ -1,3 +1,4 @@
+
 import pygame
 from gameVar import colours
 
@@ -29,3 +30,30 @@ class Cell:
             pygame.draw.line(surface,wallColour,(x,y+self.cellSize),(x+self.cellSize,y+self.cellSize),1)
         if self.walls['left']:
             pygame.draw.line(surface,wallColour,(x,y),(x,y+self.cellSize),1)
+     
+    def getUnvisitedNeighbours(self,surface):
+       if not self.visited:
+           return Cell
+    
+
+
+
+    def removeWall(self,adjCell):
+        rowDiff = adjCell.row - self.row
+        colDiff = adjCell.col - self.col
+        
+        
+        if rowDiff == -1:
+            self.walls['top'] = False
+            adjCell.walls['bottom'] = False
+        elif rowDiff == 1:
+            self.walls['bottom'] = False
+            adjCell.walls['top'] = False
+        elif colDiff == -1:
+            self.walls['left'] = False
+            adjCell.walls['right'] = False
+        elif colDiff == 1:
+            self.walls['right'] = False
+            adjCell.walls['left'] = False
+        
+            
