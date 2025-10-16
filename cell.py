@@ -30,13 +30,11 @@ class Cell:
             pygame.draw.line(surface,wallColour,(x,y+self.cellSize),(x+self.cellSize,y+self.cellSize),1)
         if self.walls['left']:
             pygame.draw.line(surface,wallColour,(x,y),(x,y+self.cellSize),1)
-     
+
     def getUnvisitedNeighbours(self,surface):
        if not self.visited:
            return Cell
     
-
-
 
     def removeWall(self,adjCell):
         rowDiff = adjCell.row - self.row
@@ -55,5 +53,4 @@ class Cell:
         elif colDiff == 1:
             self.walls['right'] = False
             adjCell.walls['left'] = False
-        
-            
+
