@@ -80,7 +80,7 @@ def characterMovement(event):
             
         elif event.key == pygame.K_RIGHT:
             newX = currentX + gameVar.cellSize
-            if newX <= gameVar.mazeWidth - gameVar.characterWidth:
+            if newX <= screenWidth - gameVar.characterWidth:
                 gameVar.characterX = newX
         
         elif event.key == pygame.K_UP:
@@ -90,7 +90,7 @@ def characterMovement(event):
         
         elif event.key == pygame.K_DOWN:
             newY = currentY + gameVar.cellSize
-            if newY <= gameVar.mazeHeight - gameVar.characterHeight:
+            if newY <= screenHeight - gameVar.characterHeight:
                 gameVar.characterY = newY
     #Keyup
     if event.type == pygame.KEYUP:

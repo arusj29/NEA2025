@@ -31,11 +31,25 @@ class Cell:
         if self.walls['left']:
             pygame.draw.line(surface,wallColour,(x,y),(x,y+self.cellSize),1)
 
-    def getUnvisitedNeighbours(self,surface):
-       if not self.visited:
-           return Cell
+    def getUnvisitedNeighbours(self,grid):
+       neighbours = []
+       totalRows = len(grid)
+       if totalRows>0:
+           totalCols = len(grid[0]) 
+       else:
+           totalCols = 0
+        
+       directions = [(-1,0),(0,1),(1,0),(0,-1)]
+       for rowChange,colChange in directions:
+           neigbourRow = self.row + rowChange 
+           neigbourCol = self.col + colChange 
+           if (0 <= neigbourRow <totalRows and 0 <=neigbourCol <totalCols):
+               neighbourCell = grid[neigbourRow][neigbourCol]
+               if not neighbourCell.visited:
+                   neighbours.append(neighbourCell)
+        
+       return neighbours
     
-
     def removeWall(self,adjCell):
         rowDiff = adjCell.row - self.row
         colDiff = adjCell.col - self.col
