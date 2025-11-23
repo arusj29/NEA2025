@@ -152,20 +152,17 @@ def settingsMenu():
             
     if helpButton.isClicked(event):
         print("Help")
-        #menuState = "help"
+        #gameVar.menuState = "help"
     if backButton.isClicked(event):
         gameVar.menuState = "main"
 
 def helpMenu():
     pygame.display.set_caption("Help") #Set title of window to help
     drawText("Help",gameVar.font,gameVar.textColour,260,50) #Display purpose of menu at the top of the  menu
+    drawText("Settings - contains different options to change the user experience.",gameVar.font,gameVar.textColour,0,70)
+    drawText("Theme-There are light and dark themes which can be selected by clicking the theme button.The default theme is light.",gameVar.font,gameVar.textColour,0,100)
 
-def mazeMenu():
-    pygame.display.set_caption("Maze menu") #Set title of window to maze menu
-    grid = createGrid()
-    drawGrid(grid)
-    #Character
-    pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
+
     
 
 #Creates the maze grid and returns it
@@ -176,7 +173,12 @@ def createGrid():
         grid.append([]) #Adds a new empty row to the grid
         #Iterates through each column position in the current row
         for col in range (gameVar.cols):
-            grid[row].append(cell.Cell(row,col,gameVar.cellSize)) #Adds a new cell to the current row in the grid
+            grid[row].append(cell.Cell(col,row,gameVar.cellSize)) #Adds a new cell to the current row in the grid
+    startCell = grid[gameVar.rows - 1][0]
+    endCell = grid[0][gameVar.cols - 1]
+    startCell.isStart = True
+    endCell.isStart = True
+    
     return grid
 
 #Displays the maze grid on the screen
@@ -185,16 +187,21 @@ def drawGrid(grid):
         for cellObj in row:
             cellObj.draw(screen)
 
+#Generates the maze using the recursive backtracker algorithm
 def generateMaze(grid):
+    #Initialise stack to hold cells
     stack = []
+    #Adds intial cell to stack of visited cells
     startingCell = grid[0][0]
     startingCell.visited = True
     stack.append(startingCell)
 
+    #Executes while stack is not empty
     while stack:
+        #Finds the neighbours of the current cell
         current = stack[-1]
         neighbours = current.getUnvisitedNeighbours(grid)
-
+        #Removes walls of a random adjacent cell
         if neighbours:
             nextCell = random.choice(neighbours)
             current.removeWall(nextCell)
@@ -203,6 +210,21 @@ def generateMaze(grid):
         else:
             stack.pop()
 
+def mazeMenu():
+    pygame.display.set_caption("Maze menu") #Set title of window to maze menu
+    if not gameVar.mazeGenerated:
+        gameVar.grid = createGrid()
+        generateMaze(gameVar.grid)
+        gameVar.mazeGenerated = True
+    drawGrid(gameVar.grid)
+   
+    #Character
+    pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
+    #Start and end positions of maze
+    pygame.draw.rect(screen,colours.red,(0,screenHeight-gameVar.cellSize,gameVar.cellSize,gameVar.cellSize))
+    pygame.draw.rect(screen,colours.green,(screenWidth-gameVar.cellSize,0,gameVar.cellSize,gameVar.cellSize))
+
+    pygame.display.update()
 
 run = True   #Used to determine whether the game is running
 while run: 

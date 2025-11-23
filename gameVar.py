@@ -5,6 +5,8 @@ class colours:
     black = (0,0,0)
     white = (255,255,255)
     blue = (5,25,245)
+    red = (255,0,0)
+    green = (0,255,0)
 
 class gameVar:
     def __init__(self):
@@ -38,6 +40,8 @@ class gameVar:
         self.characterXDirection = 0
         self.characterYDirection = 0
 
+        self.mazeGrid = None
+        self.mazeGenerated = False
     
     def updateTheme(self):
         if self.theme == "light":
