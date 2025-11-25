@@ -173,12 +173,12 @@ def createGrid():
         grid.append([]) #Adds a new empty row to the grid
         #Iterates through each column position in the current row
         for col in range (gameVar.cols):
-            grid[row].append(cell.Cell(col,row,gameVar.cellSize)) #Adds a new cell to the current row in the grid
+            grid[row].append(cell.Cell(col,row,gameVar.cellSize,gameVar.rows,gameVar.cols)) #Adds a new cell to the current row in the grid
     startCell = grid[gameVar.rows - 1][0]
     endCell = grid[0][gameVar.cols - 1]
     startCell.isStart = True
     endCell.isStart = True
-    
+
     return grid
 
 #Displays the maze grid on the screen
@@ -191,8 +191,11 @@ def drawGrid(grid):
 def generateMaze(grid):
     #Initialise stack to hold cells
     stack = []
+    #Set start at bottom left
+    startRow = len(grid) - 1
+    startCol = 0
+    startingCell = grid[startRow][startCol]
     #Adds intial cell to stack of visited cells
-    startingCell = grid[0][0]
     startingCell.visited = True
     stack.append(startingCell)
 
@@ -209,7 +212,16 @@ def generateMaze(grid):
             stack.append(nextCell)
         else:
             stack.pop()
+    
+    startCell = grid[len(grid)-1][0]
+    startCell.walls["bottom"] = False
 
+    endCell = grid[0][len(grid)-1]
+    endCell.walls["top"] = False
+
+    
+
+    
 def mazeMenu():
     pygame.display.set_caption("Maze menu") #Set title of window to maze menu
     if not gameVar.mazeGenerated:

@@ -1,17 +1,30 @@
-
 import pygame
 from gameVar import colours
 
 class Cell():
-    def __init__(self,col,row,cellSize):
+    def __init__(self,col,row,cellSize,totalRows,totalCols):
         self.col = col #Column where cell is located
         self.row = row #Row where cell is located
         self.cellSize = cellSize #Width and height of cells
+        self.totalRows = totalRows
+        self.totalCols = totalCols
+       
         #Tracks the walls of the maze 
         self.walls ={'top':True, 'right':True,'bottom':True, 'left':True} #True indicates wall present
         self.visited = False #Tracks if cell has been visited during maze generation
         self.isStart = False
         self.isEnd = False
+
+        #Perimeter walls
+        if row == 0 :
+            self.walls['top'] = True
+        if row == self.totalRows - 1 :
+            self.walls['bottom'] = True
+        if col == 0 :
+            self.walls['left'] = True
+        if col == self.totalRows -1  :
+            self.walls['right'] = True
+    
     def draw(self,surface):
         #Convert grid coordinates to screen coordinates for drawing
         x = self.col * self.cellSize
@@ -20,6 +33,8 @@ class Cell():
         #Shows if a cell has been visited
         #if self.visited:
             #pygame.draw.rect(surface,(50,50,50),(x,y,self.cellSize,self.cellSize))
+
+        pygame.draw.rect(surface,colours.white,(x,y,self.cellSize,self.cellSize))
         
         wallColour = colours.black #Sets wall colour to black
         lineWidth = 3 #Sets thickness of lines
@@ -61,16 +76,20 @@ class Cell():
         colDiff = adjCell.col - self.col
         
         #Removes walls based on position of adjacent walls
-        if rowDiff == -1:
+        #Top
+        if rowDiff == -1 and self.row > 0:
             self.walls['top'] = False
             adjCell.walls['bottom'] = False
-        elif rowDiff == 1:
+        #Bottom
+        elif rowDiff == 1 and self.row < self.totalRows - 1:
             self.walls['bottom'] = False
             adjCell.walls['top'] = False
-        elif colDiff == -1:
+        #Left
+        elif colDiff == -1 and self.col>0:
             self.walls['left'] = False
             adjCell.walls['right'] = False
-        elif colDiff == 1:
+        #Right
+        elif colDiff == 1 and self.col < self.totalCols - 1:
             self.walls['right'] = False
             adjCell.walls['left'] = False
 

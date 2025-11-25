@@ -24,7 +24,7 @@ class gameVar:
         
         #Dimensions of the maze 
         self.mazeWidth = 800 
-        self.mazeHeight = 800
+        self.mazeHeight = 600
         self.cellSize = 40
         self.cols = int(self.mazeWidth/self.cellSize)
         self.rows = int(self.mazeHeight/self.cellSize)
