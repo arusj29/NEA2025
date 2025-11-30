@@ -100,6 +100,8 @@ def characterMovement(event):
         if event.key in (pygame.K_UP, pygame.K_DOWN):
             gameVar.characterYDirection = 0
 
+def validMove():
+    
 def mainMenu():
     pygame.display.set_caption("Start Screen") #Set title of window to start screen
     drawText("ESCAPEROUTE",gameVar.font,gameVar.textColour,250,100) #Display name of game at the top of the main menu
