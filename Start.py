@@ -70,28 +70,27 @@ def textInput(event):
 def characterMovement(event):
     #Changes the direction of the character based on the user input
     if event.type == pygame.KEYDOWN:
+        if gameVar.startTime is None:
+            gameVar.startTime = pygame.time.get_ticks()
+        
         currentX = gameVar.characterX
         currentY = gameVar.characterY
 
         if event.key == pygame.K_LEFT:
-            newX = currentX - gameVar.cellSize
-            if newX >= 0:
-                gameVar.characterX = newX
-            
+            if validMove(-1,0):
+                gameVar.characterX = currentX - gameVar.cellSize
+                     
         elif event.key == pygame.K_RIGHT:
-            newX = currentX + gameVar.cellSize
-            if newX <= screenWidth - gameVar.characterWidth:
-                gameVar.characterX = newX
+            if validMove(1,0):
+                gameVar.characterX = currentX + gameVar.cellSize
         
         elif event.key == pygame.K_UP:
-            newY = currentY - gameVar.cellSize
-            if newY >= 0:
-                gameVar.characterY = newY
+            if validMove(0,-1):
+                gameVar.characterY = currentY - gameVar.cellSize
         
         elif event.key == pygame.K_DOWN:
-            newY = currentY + gameVar.cellSize
-            if newY <= screenHeight - gameVar.characterHeight:
-                gameVar.characterY = newY
+            if validMove(0,1):
+                gameVar.characterY = currentY + gameVar.cellSize
     #Keyup
     if event.type == pygame.KEYUP:
         #Stops the character from continuting to move once the key is no longer pressed
@@ -100,7 +99,21 @@ def characterMovement(event):
         if event.key in (pygame.K_UP, pygame.K_DOWN):
             gameVar.characterYDirection = 0
 
-def validMove():
+def validMove(x,y):
+    #Current cell of character
+    col = gameVar.characterX // gameVar.cellSize
+    row = gameVar.characterY // gameVar.cellSize
+    cell = gameVar.grid[row][col]
+    #Check walls
+    if x == -1:
+        return not cell.walls['left']
+    if x == 1:
+        return not cell.walls['right']
+    if y == -1:
+        return not cell.walls['top']
+    if y == 1:
+        return not cell.walls['bottom']
+    return False
     
 def mainMenu():
     pygame.display.set_caption("Start Screen") #Set title of window to start screen
@@ -238,7 +251,27 @@ def mazeMenu():
     pygame.draw.rect(screen,colours.red,(0,screenHeight-gameVar.cellSize,gameVar.cellSize,gameVar.cellSize))
     pygame.draw.rect(screen,colours.green,(screenWidth-gameVar.cellSize,0,gameVar.cellSize,gameVar.cellSize))
 
+    #Check for maze completion
+    if (gameVar.characterX == screenWidth - gameVar.cellSize and gameVar.characterY == 0):
+        screen.fill(colours.white)
+        drawText("Maze completed! Press SPACE to return to main menu",gameVar.font,gameVar.textColour,250,100)
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit() 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    resetMaze()
+                    gameVar.menuState = "main"
+
     pygame.display.update()
+
+def resetMaze():
+    gameVar.mazeGenerated = False
+    gameVar.characterX = 0
+    gameVar.characterY = screenHeight - gameVar.cellSize
+
 
 run = True   #Used to determine whether the game is running
 while run: 

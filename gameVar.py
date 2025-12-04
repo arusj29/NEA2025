@@ -15,6 +15,9 @@ class gameVar:
         self.theme = "light" #Stores the selected theme
         self.textColour = colours.black #Sets the text colour as black
         self.backgrdColour = colours.white #Used to store the colour for the background
+        self.startTime = None
+        self.endTime = None
+        self.mazeCompleted = False
 
         #Font definitions
         self.font = pygame.font.SysFont("Roboto",60) #Sets the font as Roboto and size 60
