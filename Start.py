@@ -253,8 +253,17 @@ def mazeMenu():
 
     #Check for maze completion
     if (gameVar.characterX == screenWidth - gameVar.cellSize and gameVar.characterY == 0):
-        screen.fill(colours.white)
-        drawText("Maze completed! Press SPACE to return to main menu",gameVar.font,gameVar.textColour,250,100)
+        if not gameVar.mazeCompleted:
+            gameVar.mazeCompleted = True
+            gameVar.endTime = pygame.time.get_ticks()
+
+        if gameVar.mazeCompleted:
+            totalTime = (gameVar.endTime - gameVar.startTime) / 1000 #Time in seconds
+            screen.fill(gameVar.backgrdColour)
+            drawText(f"Maze completed in {totalTime:.2f} seconds! Press SPACE to return to main menu",gameVar.font,gameVar.textColour,0,100)
+            drawText("Press SPACE to return to main menu",gameVar.font,gameVar.textColour,0,200)
+        
+        
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -269,6 +278,8 @@ def mazeMenu():
 
 def resetMaze():
     gameVar.mazeGenerated = False
+    gameVar.startTime = None
+    gameVar.endTime = None
     gameVar.characterX = 0
     gameVar.characterY = screenHeight - gameVar.cellSize
 
