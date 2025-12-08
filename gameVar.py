@@ -16,7 +16,6 @@ class gameVar:
         self.textColour = colours.black #Sets the text colour as black
         self.backgrdColour = colours.white #Used to store the colour for the background
         self.startTime = None
-        self.endTime = None
         self.mazeCompleted = False
 
         #Font definitions
@@ -45,6 +44,12 @@ class gameVar:
 
         self.mazeGrid = None
         self.mazeGenerated = False
+
+        #Timing
+        self.timerStarted = False
+        self.startTime = 0
+        self.currentTime = 0
+        self.finalTime = 0
     
     def updateTheme(self):
         if self.theme == "light":

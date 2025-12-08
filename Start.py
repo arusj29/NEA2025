@@ -68,14 +68,15 @@ def textInput(event):
             gameVar.userText = gameVar.userText[:-1]
 
 def characterMovement(event):
-    #Changes the direction of the character based on the user input
+    
     if event.type == pygame.KEYDOWN:
-        if gameVar.startTime is None:
+        if not gameVar.timerStarted:
             gameVar.startTime = pygame.time.get_ticks()
+            gameVar.timerStarted = True
         
         currentX = gameVar.characterX
         currentY = gameVar.characterY
-
+        #Changes the direction of the character based on the user input
         if event.key == pygame.K_LEFT:
             if validMove(-1,0):
                 gameVar.characterX = currentX - gameVar.cellSize
@@ -239,32 +240,19 @@ def generateMaze(grid):
     
 def mazeMenu():
     pygame.display.set_caption("Maze menu") #Set title of window to maze menu
+    #Ensure maze is only generated once
     if not gameVar.mazeGenerated:
         gameVar.grid = createGrid()
         generateMaze(gameVar.grid)
         gameVar.mazeGenerated = True
-    drawGrid(gameVar.grid)
-   
-    #Character
-    pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
-    #Start and end positions of maze
-    pygame.draw.rect(screen,colours.red,(0,screenHeight-gameVar.cellSize,gameVar.cellSize,gameVar.cellSize))
-    pygame.draw.rect(screen,colours.green,(screenWidth-gameVar.cellSize,0,gameVar.cellSize,gameVar.cellSize))
 
-    #Check for maze completion
-    if (gameVar.characterX == screenWidth - gameVar.cellSize and gameVar.characterY == 0):
-        if not gameVar.mazeCompleted:
-            gameVar.mazeCompleted = True
-            gameVar.endTime = pygame.time.get_ticks()
-
-        if gameVar.mazeCompleted:
-            totalTime = (gameVar.endTime - gameVar.startTime) / 1000 #Time in seconds
-            screen.fill(gameVar.backgrdColour)
-            drawText(f"Maze completed in {totalTime:.2f} seconds! Press SPACE to return to main menu",gameVar.font,gameVar.textColour,0,100)
-            drawText("Press SPACE to return to main menu",gameVar.font,gameVar.textColour,0,200)
-        
-        
+    if gameVar.mazeCompleted:
+        totalTime = (gameVar.finalTime - gameVar.startTime) / 1000 #Time in seconds
+        screen.fill(gameVar.backgrdColour)
+        drawText(f"Maze completed in {totalTime:.2f} seconds!",gameVar.font,gameVar.textColour,30,150)
+        drawText("Press SPACE to return to main menu",gameVar.font,gameVar.textColour,30,250)
         pygame.display.update()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -274,15 +262,40 @@ def mazeMenu():
                     resetMaze()
                     gameVar.menuState = "main"
 
+        return
+    
+    drawGrid(gameVar.grid)
+   
+    #Character
+    pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
+    #Start and end positions of maze
+    pygame.draw.rect(screen,colours.red,(0,screenHeight-gameVar.cellSize,gameVar.cellSize,gameVar.cellSize))
+    pygame.draw.rect(screen,colours.green,(screenWidth-gameVar.cellSize,0,gameVar.cellSize,gameVar.cellSize))
+
+    if gameVar.timerStarted :
+        gameVar.currentTime = (pygame.time.get_ticks() - gameVar.startTime) / 1000
+        showTimer(gameVar.currentTime)
+    
+    #Check for maze completion
+    if (gameVar.characterX == screenWidth - gameVar.cellSize and gameVar.characterY == 0):
+        gameVar.timerStarted = False
+        gameVar.finalTime = pygame.time.get_ticks()
+        gameVar.mazeCompleted = True
+   
     pygame.display.update()
+    
 
 def resetMaze():
     gameVar.mazeGenerated = False
-    gameVar.startTime = None
-    gameVar.endTime = None
+    gameVar.startTime = 0
+    gameVar.finalTime = None
+    gameVar.timerStarted = False
+    gameVar.currentTime = 0
     gameVar.characterX = 0
     gameVar.characterY = screenHeight - gameVar.cellSize
 
+def showTimer(timeValue):
+    drawText(f"Time:{timeValue:.2f}s",gameVar.font,gameVar.textColour,10,10)
 
 run = True   #Used to determine whether the game is running
 while run: 
