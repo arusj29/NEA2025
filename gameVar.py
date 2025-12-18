@@ -50,6 +50,12 @@ class gameVar:
         self.startTime = 0
         self.currentTime = 0
         self.finalTime = 0
+
+        #Inputs
+        self.inputActive = False
+        self.inputText = ""
+        self.askMazeSize = True
+        
     
     def updateTheme(self):
         if self.theme == "light":

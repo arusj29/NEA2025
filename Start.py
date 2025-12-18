@@ -24,15 +24,15 @@ print(actualWidth,actualHeight)
 def imageLoad(fileName):
     return pygame.image.load(fileName).convert_alpha()
 
-startImg = imageLoad('startBtn.png')
-settingsImg = imageLoad('settingsBtn.png')
-exitImg = imageLoad('exitBtn.png')
+startImg = imageLoad('Images/startBtn.png')
+settingsImg = imageLoad('Images/settingsBtn.png')
+exitImg = imageLoad('Images/exitBtn.png')
 
-createImg = imageLoad('createBtn.png')
-textboxImg = imageLoad('textboxBtn.png')
+createImg = imageLoad('Images/createBtn.png')
+textboxImg = imageLoad('Images/textboxBtn.png')
 
-helpImg = imageLoad('helpBtn.png')
-backImg = imageLoad('backBtn.png')
+helpImg = imageLoad('Images/helpBtn.png')
+backImg = imageLoad('Images/backBtn.png')
 
 #Button instances
 def buttonInstance(x,y,image,scale):
@@ -132,6 +132,7 @@ def mainMenu():
 
 def generateMenu():
     pygame.display.set_caption("Maze generation") #Set title of window to maze generation
+    screen.fill(gameVar.backgrdColour)
     drawText("Create a maze",gameVar.font,gameVar.textColour,250,50) #Display purpose of menu at the top of the  menu
     drawText("Width:",gameVar.font,gameVar.textColour,120,140) #Label the width text box
     drawText("Height:",gameVar.font,gameVar.textColour,105,200)#Label the height text box
@@ -140,7 +141,7 @@ def generateMenu():
     heightButton.draw(screen)
     
     if createButton.isClicked(event):
-        gameVar.menuState = "maze"
+        gameVar.menuState = "solve"
         if widthButton.isClicked(event):
             gameVar.mazeWidth = drawText(gameVar.userText,gameVar.font,gameVar.textColour,200,140)
         if heightButton.isClicked(event):
@@ -228,22 +229,15 @@ def generateMaze(grid):
             stack.append(nextCell)
         else:
             stack.pop()
-    
-    startCell = grid[len(grid)-1][0]
-    startCell.walls["bottom"] = False
 
-    endCell = grid[0][len(grid)-1]
-    endCell.walls["top"] = False
-
-    
-
-    
 def mazeMenu():
     pygame.display.set_caption("Maze menu") #Set title of window to maze menu
     #Ensure maze is only generated once
     if not gameVar.mazeGenerated:
         gameVar.grid = createGrid()
         generateMaze(gameVar.grid)
+        addLoops(gameVar.grid, loopChance=0.05)  
+
         gameVar.mazeGenerated = True
 
     if gameVar.mazeCompleted:
@@ -278,7 +272,6 @@ def mazeMenu():
     
     #Check for maze completion
     if (gameVar.characterX == screenWidth - gameVar.cellSize and gameVar.characterY == 0):
-        gameVar.timerStarted = False
         gameVar.finalTime = pygame.time.get_ticks()
         gameVar.mazeCompleted = True
    
@@ -287,6 +280,7 @@ def mazeMenu():
 
 def resetMaze():
     gameVar.mazeGenerated = False
+    gameVar.mazeCompleted = False
     gameVar.startTime = 0
     gameVar.finalTime = None
     gameVar.timerStarted = False
@@ -296,6 +290,30 @@ def resetMaze():
 
 def showTimer(timeValue):
     drawText(f"Time:{timeValue:.2f}s",gameVar.font,gameVar.textColour,10,10)
+
+
+def addLoops(grid, loopChance=0.15):
+    rows = len(grid)
+    cols = len(grid[0])
+
+    for row in range(rows):
+        for col in range(cols):
+            cell = grid[row][col]
+
+            # Try removing right wall
+            if col < cols - 1 and cell.walls['right']:
+                if random.random() < loopChance:
+                    neighbour = grid[row][col + 1]
+                    cell.removeWall(neighbour)
+
+            # Try removing bottom wall
+            if row < rows - 1 and cell.walls['bottom']:
+                if random.random() < loopChance:
+                    neighbour = grid[row + 1][col]
+                    cell.removeWall(neighbour)
+
+def solveMenu():
+    
 
 run = True   #Used to determine whether the game is running
 while run: 
@@ -320,8 +338,11 @@ while run:
         settingsMenu()
     elif gameVar.menuState == "help":
         helpMenu()
+    elif gameVar.menuState == "solve":
+        solveMenu()
     elif gameVar.menuState == "maze":
         mazeMenu()
+    
     
         
     #Update the window
