@@ -33,8 +33,8 @@ class gameVar:
 
         #User character
         #Dimensions of character
-        self.characterWidth = 40 
-        self.characterHeight = 40 
+        self.characterWidth = self.cellSize 
+        self.characterHeight = self.cellSize 
         #Coordinates of character
         self.characterX = 0
         self.characterY = 560
@@ -55,6 +55,13 @@ class gameVar:
         self.inputActive = False
         self.inputText = ""
         self.askMazeSize = True
+
+        #Algorithms
+        self.solutionPath = []
+        self.pathIndex = 0
+        self.autoSolve = False
+        self.solveAlgorithm = None
+
         
     
     def updateTheme(self):

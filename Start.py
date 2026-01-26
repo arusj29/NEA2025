@@ -1,9 +1,9 @@
-
 import pygame
 import button
 from gameVar import gameVar,colours
 import cell
 import random
+from collections import deque
 
 #Initialise pygame modules
 pygame.init()
@@ -34,6 +34,12 @@ textboxImg = imageLoad('Images/textboxBtn.png')
 helpImg = imageLoad('Images/helpBtn.png')
 backImg = imageLoad('Images/backBtn.png')
 
+solveImg = imageLoad('Images/solveBtn.png')
+DFSImg = imageLoad('Images/DFSBtn.png')
+BFSImg = imageLoad('Images/BFSBtn.png')
+dijkstraImg = imageLoad('Images/dijkstraBtn.png')
+AstarImg = imageLoad('Images/AstarBtn.png')
+
 #Button instances
 def buttonInstance(x,y,image,scale):
     return button.Button(x,y,image,scale)
@@ -50,6 +56,12 @@ fontsizeButton = buttonInstance(300,100,textboxImg,1)
 themeButton = buttonInstance(300,200,textboxImg,1)
 helpButton = buttonInstance(250,300,helpImg,0.65)
 backButton = buttonInstance(250,400,backImg,0.65)
+
+solveButton = buttonInstance(250,250,solveImg,0.5)
+DFSButton = buttonInstance(250,350,DFSImg,0.5)
+BFSButton = buttonInstance(250,450,BFSImg,0.5)
+dijkstraButton = buttonInstance(250,550,dijkstraImg,0.5)
+AstarButton = buttonInstance(250,600,AstarImg,0.5)
 
 #The subroutine prints a line of text with a certain font and colour and at the coordinates(x,y)
 #Called to display text on the screen
@@ -68,6 +80,9 @@ def textInput(event):
             gameVar.userText = gameVar.userText[:-1]
 
 def characterMovement(event):
+    
+    if gameVar.autoSolve:
+        return
     
     if event.type == pygame.KEYDOWN:
         if not gameVar.timerStarted:
@@ -223,7 +238,8 @@ def generateMaze(grid):
         neighbours = current.getUnvisitedNeighbours(grid)
         #Removes walls of a random adjacent cell
         if neighbours:
-            nextCell = random.choice(neighbours)
+            random.shuffle(neighbours)
+            nextCell = neighbours[0]
             current.removeWall(nextCell)
             nextCell.visited =  True
             stack.append(nextCell)
@@ -232,6 +248,7 @@ def generateMaze(grid):
 
 def mazeMenu():
     pygame.display.set_caption("Maze menu") #Set title of window to maze menu
+    
     #Ensure maze is only generated once
     if not gameVar.mazeGenerated:
         gameVar.grid = createGrid()
@@ -239,6 +256,27 @@ def mazeMenu():
         addLoops(gameVar.grid, loopChance=0.05)  
 
         gameVar.mazeGenerated = True
+        gameVar.solutionPath = []
+        
+        gameVar.mazeCompleted = False
+
+    if gameVar.autoSolve and not gameVar.solutionPath:
+        start = getCurrentCell()
+        end = gameVar.grid[0][gameVar.cols - 1]
+    
+        if gameVar.solveAlgorithm == "DFS":
+            gameVar.solutionPath = DFS(start, end, gameVar.grid)
+
+        elif gameVar.solveAlgorithm == "BFS":
+            gameVar.solutionPath = BFS(start, end, gameVar.grid)
+
+        elif gameVar.solveAlgorithm == "DIJKSTRA":
+            gameVar.solutionPath = Dijkstra(start, end, gameVar.grid)
+
+        elif gameVar.solveAlgorithm == "ASTAR":
+            gameVar.solutionPath = astar(start, end, gameVar.grid)
+        gameVar.pathIndex = 0
+
 
     if gameVar.mazeCompleted:
         totalTime = (gameVar.finalTime - gameVar.startTime) / 1000 #Time in seconds
@@ -260,12 +298,19 @@ def mazeMenu():
     
     drawGrid(gameVar.grid)
    
+    # Animate solution if autosolving
+    if gameVar.autoSolve and gameVar.solutionPath:
+        followPath()
+        drawSolutionPath()
+
     #Character
     pygame.draw.rect(screen,colours.blue,[gameVar.characterX,gameVar.characterY,gameVar.characterWidth,gameVar.characterHeight]) #Display the character on the screen
+    
     #Start and end positions of maze
     pygame.draw.rect(screen,colours.red,(0,screenHeight-gameVar.cellSize,gameVar.cellSize,gameVar.cellSize))
     pygame.draw.rect(screen,colours.green,(screenWidth-gameVar.cellSize,0,gameVar.cellSize,gameVar.cellSize))
 
+    #Timer
     if gameVar.timerStarted :
         gameVar.currentTime = (pygame.time.get_ticks() - gameVar.startTime) / 1000
         showTimer(gameVar.currentTime)
@@ -292,28 +337,183 @@ def showTimer(timeValue):
     drawText(f"Time:{timeValue:.2f}s",gameVar.font,gameVar.textColour,10,10)
 
 
-def addLoops(grid, loopChance=0.15):
-    rows = len(grid)
-    cols = len(grid[0])
-
-    for row in range(rows):
-        for col in range(cols):
+#Adds additional loops to the maze by randomly removing extra walls
+def addLoops(grid, loopChance=0.05):
+    #Iterates through each row and column of the maze
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
             cell = grid[row][col]
 
-            # Try removing right wall
-            if col < cols - 1 and cell.walls['right']:
-                if random.random() < loopChance:
-                    neighbour = grid[row][col + 1]
+            if random.random() < loopChance:
+                neighbours=[]
+                if row>0:
+                    neighbours.append(grid[row-1][col])
+                if row<len(grid)-1:
+                    neighbours.append(grid[row+1][col])
+                if col>0:
+                    neighbours.append(grid[row][col-1])
+                if col<len(grid[0])-1:
+                    neighbours.append(grid[row][col+1])
+                
+                if neighbours:
+                    neighbour = random.choice(neighbours)
                     cell.removeWall(neighbour)
-
-            # Try removing bottom wall
-            if row < rows - 1 and cell.walls['bottom']:
-                if random.random() < loopChance:
-                    neighbour = grid[row + 1][col]
-                    cell.removeWall(neighbour)
-
-def solveMenu():
+           
+def solveMenu(event):
+    pygame.display.set_caption("Solve menu") #Set title of window 
+    screen.fill(gameVar.backgrdColour)
+    drawText("Select an algorithm or solve the maze yourself:",gameVar.font,gameVar.textColour,100,50) #Display purpose of menu at the top of the  menu
     
+    #solveButton.draw(screen)
+    DFSButton.draw(screen)
+    BFSButton.draw(screen)
+    dijkstraButton.draw(screen)
+    AstarButton.draw(screen)
+    
+    #Algorithm selection
+    if event and event.type == pygame.MOUSEBUTTONDOWN:
+        if solveButton.isClicked(event):
+            gameVar.solveAlgorithm = "maze"
+        elif DFSButton.isClicked(event):
+            print("DFS selected")
+            gameVar.solveAlgorithm = "DFS"
+             
+        
+        elif BFSButton.isClicked(event):
+            gameVar.solveAlgorithm = "BFS"
+            
+        
+        elif dijkstraButton.isClicked(event):
+            gameVar.solveAlgorithm = "DIJKSTRA"
+        
+        elif AstarButton.isClicked(event):
+            gameVar.solveAlgorithm = "ASTAR"
+            
+        
+        
+        if gameVar.solveAlgorithm is not None:
+            gameVar.pathIndex = 0
+            gameVar.autoSolve = True
+            gameVar.solutionPath = []
+            gameVar.menuState = "maze"
+            
+    pygame.display.update()
+    
+       
+
+def getCurrentCell():
+    col = gameVar.characterX // gameVar.cellSize
+    row = gameVar.characterY // gameVar.cellSize
+    return gameVar.grid[row][col]
+
+def getNeighbours(cell, grid):
+    neighbours = []
+
+    if not cell.walls["top"]:
+        neighbours.append(grid[cell.row - 1][cell.col])
+    if not cell.walls["bottom"]:
+        neighbours.append(grid[cell.row + 1][cell.col])
+    if not cell.walls["left"]:
+        neighbours.append(grid[cell.row][cell.col - 1])
+    if not cell.walls["right"]:
+        neighbours.append(grid[cell.row][cell.col + 1])
+
+    return neighbours
+
+def DFS(startCell, endCell, grid):
+    stack = []
+    visited = set()
+    parent = {}
+
+    # Push start cell onto stack
+    stack.append(startCell)
+    visited.add(startCell)
+
+    # While stack is not empty
+    while len(stack) > 0:
+        current = stack.pop()
+
+        # Check if end cell reached
+        if current == endCell:
+            return reconstructPath(parent, startCell, endCell)
+
+        # Reset unvisited neighbours list each loop
+        unvisited = []
+
+        # Check neighbours of current cell
+        for neighbour in getNeighbours(current, grid):
+            if neighbour not in visited:
+                unvisited.append(neighbour)
+
+        # If there are unvisited neighbours
+        if len(unvisited) > 0:
+            nextCell = unvisited.pop()
+            visited.add(nextCell)
+            parent[nextCell] = current
+            stack.append(nextCell)
+        # else backtracking occurs automatically by pop
+    # No path found
+    return None
+
+
+def BFS(startCell, endCell, grid):
+    # Queue used to explore cells in breadth-first order
+    queue = deque()
+
+    # Stores visited cells to prevent revisiting
+    visited = set()
+
+    # Stores each cell's parent to reconstruct the path
+    parent = {}
+
+    # Add start cell to queue and visited list
+    queue.append(startCell)
+    visited.add(startCell)
+
+    # Loop while there are cells left to explore
+    while queue:
+        current = queue.popleft()
+
+        # Check if the goal has been reached
+        if current == endCell:
+            return reconstructPath(parent, startCell, endCell)
+
+        # Get accessible neighbouring cells
+        neighbours = getNeighbours(current, grid)
+
+        for cell in neighbours:
+            if cell not in visited:
+                visited.add(cell)
+                parent[cell] = current
+                queue.append(cell)
+
+    # If no path exists
+    return []
+
+def reconstructPath(parent, startCell, endCell):
+    path = []
+    current = endCell
+    while current != startCell:
+        path.append(current)
+        current = parent[current]
+    path.append(startCell)
+    path.reverse()
+    return path
+
+def followPath():
+    if gameVar.autoSolve and gameVar.pathIndex < len(gameVar.path):
+        cell = gameVar.path[gameVar.pathIndex]
+        gameVar.characterX = cell.col * gameVar.cellSize
+        gameVar.characterY = cell.row * gameVar.cellSize
+        gameVar.pathIndex += 1
+    else:
+        gameVar.autoSolve = False
+
+def drawSolutionPath():
+    for cell in gameVar.solutionPath:
+        x = cell.col * gameVar.cellSize
+        y = cell.row * gameVar.cellSize
+        pygame.draw.rect(screen,(200, 200, 0),(x + 10, y + 10, gameVar.cellSize - 20, gameVar.cellSize - 20))
 
 run = True   #Used to determine whether the game is running
 while run: 
@@ -324,6 +524,8 @@ while run:
             run = False   #Game is not running so window can be closed
         textInput(event)
         characterMovement(event)
+        if gameVar.menuState == "solve":
+            solveMenu(event)
     #Set the background to the chosen colour
     screen.fill((gameVar.backgrdColour))
     
@@ -339,7 +541,7 @@ while run:
     elif gameVar.menuState == "help":
         helpMenu()
     elif gameVar.menuState == "solve":
-        solveMenu()
+            solveMenu(event)
     elif gameVar.menuState == "maze":
         mazeMenu()
     
