@@ -21,11 +21,11 @@ class textBox:
         if event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
-            elif event.key == pygame.K_RETURN:
-                self.active = False
-            else:
+            #Allow digit input
+            elif event.unicode.isdigit():
                 # Add typed character
                 self.text += event.unicode
+    
     def draw(self, surface):
         # Draw the box
         if self.active:
@@ -39,4 +39,6 @@ class textBox:
         surface.blit(textSurface, (self.rect.x + 5, self.rect.y + 5))
 
     def getValue(self):
-        return self.text
+        if self.text == "":
+            return None
+        return int(self.text)

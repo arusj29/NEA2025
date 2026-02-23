@@ -12,7 +12,6 @@ class Button():
         self.clicked = False  #Used to prevent clicks from carrying over
     
     def draw(self, surface):
-        
         surface.blit(self.image,(self.rect.x,self.rect.y))
         
 
@@ -32,7 +31,3 @@ class Button():
         else:
             self.clicked = False
         return action
-            
-        
-
-        

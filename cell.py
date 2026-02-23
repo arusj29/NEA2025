@@ -1,5 +1,6 @@
 import pygame
-from gameVar import colours
+from variables import colours
+from gameInstance import game as gameVar
 
 class Cell():
     def __init__(self,col,row,cellSize,totalRows,totalCols):
@@ -30,13 +31,18 @@ class Cell():
         x = self.col * self.cellSize
         y = self.row * self.cellSize
         
-        #Shows if a cell has been visited
-        #if self.visited:
-            #pygame.draw.rect(surface,(50,50,50),(x,y,self.cellSize,self.cellSize))
+        # Background and wall colours based on theme
+        if gameVar.theme == "dark":
+            bckgrdColour = colours.black
+            wallColour = colours.white
+        else:
+            bckgrdColour = colours.white
+            wallColour = colours.black
 
-        pygame.draw.rect(surface,colours.white,(x,y,self.cellSize,self.cellSize))
+        # Fill cell background
+        pygame.draw.rect(surface,bckgrdColour,(x,y,self.cellSize,self.cellSize))
         
-        wallColour = colours.black #Sets wall colour to black
+        
         lineWidth = 3 #Sets thickness of lines
         #Check if the walls exist and if so draw them
         if self.walls['top']:
